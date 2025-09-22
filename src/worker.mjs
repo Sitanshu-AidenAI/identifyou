@@ -1,19 +1,18 @@
-// Worker entrypoint: serves HTML + handles API + Durable Objects
-
 import HTML from "./chat.html";
 
 async function handleErrors(request, func) {
   try {
     return await func();
   } catch (err) {
+    console.error(err);
     if (request.headers.get("Upgrade") === "websocket") {
       let pair = new WebSocketPair();
       pair[1].accept();
-      pair[1].send(JSON.stringify({ error: err.stack }));
+      pair[1].send(JSON.stringify({ error: "Internal server error" }));
       pair[1].close(1011, "Uncaught exception during session setup");
       return new Response(null, { status: 101, webSocket: pair[0] });
     } else {
-      return new Response(err.stack, { status: 500 });
+      return new Response("Internal server error", { status: 500 });
     }
   }
 }
@@ -45,6 +44,7 @@ async function handleApiRequest(path, request, env) {
     case "room": {
       if (!path[1]) {
         if (request.method === "POST") {
+          // 🔒 Optionally, you could call RateLimiter here before creating a room
           let id = env.rooms.newUniqueId();
           return new Response(id.toString(), {
             headers: { "Access-Control-Allow-Origin": "*" },
@@ -121,10 +121,31 @@ export class ChatRoom {
 
   async webSocketMessage(webSocket, msg) {
     let session = this.sessions.get(webSocket);
-    let data = JSON.parse(msg);
+    if (!session) {
+      return; // guard: ignore if socket not tracked
+    }
 
+    let data;
+    try {
+      data = JSON.parse(msg);
+    } catch {
+      try { webSocket.send(JSON.stringify({ error: "Invalid JSON" })); } catch {}
+      return;
+    }
+
+    // Heartbeat
+    if (data.type === "ping") {
+      try { webSocket.send(JSON.stringify({ type: "pong" })); } catch {}
+      return;
+    }
+
+    // First message must set the name
     if (!session.name) {
-      session.name = "" + (data.name || "anonymous");
+      if (!data.name) {
+        webSocket.send(JSON.stringify({ error: "Name required before sending messages." }));
+        return;
+      }
+      session.name = "" + data.name;
       if (session.name.length > 32) {
         webSocket.send(JSON.stringify({ error: "Name too long." }));
         webSocket.close(1009, "Name too long.");
@@ -132,7 +153,7 @@ export class ChatRoom {
       }
 
       session.blockedMessages.forEach((queued) => {
-        webSocket.send(queued);
+        try { webSocket.send(queued); } catch {}
       });
       delete session.blockedMessages;
       this.broadcast({ joined: session.name });
@@ -140,13 +161,17 @@ export class ChatRoom {
       return;
     }
 
-    data = { name: session.name, message: "" + data.message };
+    if (!session.name) return; // guard: must have name
 
+    if (typeof data.message !== "string" || data.message.trim() === "") {
+      return;
+    }
     if (data.message.length > 256) {
       webSocket.send(JSON.stringify({ error: "Message too long." }));
       return;
     }
 
+    data = { name: session.name, message: data.message };
     data.timestamp = Math.max(Date.now(), this.lastTimestamp + 1);
     this.lastTimestamp = data.timestamp;
 
@@ -201,7 +226,7 @@ export class ChatRoom {
   }
 }
 
-// Minimal RateLimiter implementation to satisfy Wrangler + prevent spam
+// ✅ RateLimiter DO added back
 export class RateLimiter {
   constructor(state, env) {
     this.nextAllowedTime = 0;
@@ -210,7 +235,6 @@ export class RateLimiter {
   async fetch(request) {
     return await handleErrors(request, async () => {
       let now = Date.now() / 1000;
-
       this.nextAllowedTime = Math.max(now, this.nextAllowedTime);
 
       if (request.method === "POST") {
@@ -224,3 +248,9 @@ export class RateLimiter {
     });
   }
 }
+
+// ✅ Export Durable Objects map
+export const durableObjects = {
+  ChatRoom,
+  RateLimiter,
+};
