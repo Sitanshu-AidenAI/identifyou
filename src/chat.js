@@ -14,9 +14,8 @@ const leaveButton = document.querySelector("#leave-chat");
 
 let username, roomname;
 let isAtBottom = true;
-let hostname = window.location.host || "127.0.0.1:8787";
+let readyToChat = false;
 let onlineUsers = new Set();
-let readyToChat = false; // ✅ don’t send messages until server confirms
 
 function logError(msg) {
   console.error(msg);
@@ -46,16 +45,21 @@ function startRoomChooser() {
     roomname = roomNameInput.value.trim();
     if (roomname) {
       localStorage.setItem("roomname", roomname);
+      window.history.pushState({}, "", `/?room=${roomname}`); // ✅ reflect in URL
       startChat();
     } else logError("Please enter a room name!");
   });
 
   goPrivateButton.addEventListener("click", async () => {
     try {
-      let response = await fetch("http://" + hostname + "/api/room", { method: "POST" });
+      let response = await fetch("/api/room", { method: "POST" });
       if (!response.ok) throw new Error("Failed to create room");
       roomname = await response.text();
       localStorage.setItem("roomname", roomname);
+
+      // ✅ Update URL so it can be shared
+      window.history.pushState({}, "", `/?room=${roomname}`);
+
       startChat();
     } catch (err) {
       logError(err.message);
@@ -64,14 +68,26 @@ function startRoomChooser() {
 }
 
 function startChat() {
+  if (!username) {
+    logError("❌ Username missing, cannot start chat");
+    return;
+  }
+  if (!roomname) {
+    logError("❌ Room name missing, cannot start chat");
+    return;
+  }
+
   roomForm.style.display = "none";
 
-  roomname = roomname.replace(/[^a-zA-Z0-9_-]/g, "").toLowerCase();
+  // ✅ Only sanitize short human-readable names, not hex IDs
+  if (!/^[0-9a-f]{64}$/i.test(roomname)) {
+    roomname = roomname.replace(/[^a-zA-Z0-9_-]/g, "").toLowerCase();
+  }
 
   chatInput.addEventListener("keydown", e => {
     if (e.key === "Enter") {
       e.preventDefault();
-      if (readyToChat && currentWebSocket && chatInput.value.trim()) { // ✅ only send when ready
+      if (readyToChat && currentWebSocket && chatInput.value.trim()) {
         currentWebSocket.send(JSON.stringify({ message: chatInput.value.trim() }));
         chatInput.value = "";
         chatlog.scrollBy(0, 1e8);
@@ -83,8 +99,10 @@ function startChat() {
 }
 
 function join() {
+  if (!username || !roomname) return;
+
   const wss = location.protocol === "http:" ? "ws://" : "wss://";
-  const wsUrl = wss + hostname + "/api/room/" + roomname + "/websocket";
+  const wsUrl = wss + window.location.host + "/api/room/" + roomname + "/websocket";
 
   let ws = new WebSocket(wsUrl);
 
@@ -120,7 +138,7 @@ function join() {
     } else if (data.ready) {
       onlineUsers.add(username);
       updateRoster();
-      readyToChat = true; // ✅ now allow sending messages
+      readyToChat = true;
     }
   });
 
@@ -165,20 +183,25 @@ function logout() {
   roster.innerHTML = "<p><strong>Online Users</strong></p>";
   onlineUsers.clear();
 
+  // Reset URL to base
+  window.history.pushState({}, "", "/");
+
   nameForm.style.display = "block";
   roomForm.style.display = "none";
 }
 
 leaveButton.addEventListener("click", logout);
 
-// ✅ Restore session on reload
+// ✅ Restore session on reload (or shared invite link)
 document.addEventListener("DOMContentLoaded", () => {
+  const urlParams = new URLSearchParams(window.location.search);
   const savedUser = localStorage.getItem("username");
   const savedRoom = localStorage.getItem("roomname");
+  const urlRoom = urlParams.get("room");
 
-  if (savedUser && savedRoom) {
+  if (savedUser && (savedRoom || urlRoom)) {
     username = savedUser;
-    roomname = savedRoom;
+    roomname = urlRoom || savedRoom;
     nameForm.style.display = "none";
     roomForm.style.display = "none";
     startChat();
