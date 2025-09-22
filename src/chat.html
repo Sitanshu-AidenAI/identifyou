@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Identifyou Chat</title>
+    <link rel="stylesheet" href="/chat.css">
+  </head>
+  <body>
+    <header>
+      <img src="/logo.png" alt="Company Logo" height="40">
+      <h1>Identifyou Chat</h1>
+    </header>
+
+    <main>
+      <div id="chat-container">
+        <div id="chatlog"></div>
+        <input id="chat-input" placeholder="Type a message...">
+      </div>
+      <div id="roster">Online Users</div>
+    </main>
+
+    <!-- Error box -->
+    <div id="error-box" style="color: red; text-align: center; margin: 10px;"></div>
+
+    <!-- Forms -->
+    <form id="name-form">
+      <input id="name-input" placeholder="Your name">
+      <p>Welcome to Identifyou Chat, powered by<br>
+        <a href="https://www.aidenai.com/" target="_blank">
+          Aiden AI
+        </a>
+      </p>
+    </form>
+
+    <form id="room-form">
+      <p>Enter a public room:</p>
+      <input id="room-name" placeholder="Room name">
+      <!-- ✅ buttons fixed -->
+      <button id="go-public" type="button">Join Room</button>
+      <p>OR</p>
+      <button id="go-private" type="button">Create Private Room</button>
+    </form>
+
+   
+    <script src="/chat.js" defer></script>
+  </body>
+</html>
