@@ -4,7 +4,7 @@ function Header() {
   return (
     <header className="relative flex items-center justify-between p-2 sm:p-4 bg-gradient-to-r from-gray-900 via-purple-900 to-gray-900 text-white shadow-2xl border-b border-purple-500/20 flex-shrink-0">
       {/* Animated background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 via-blue-600/10 to-purple-600/10 animate-pulse"></div>
+      <div className="absolute inset-0 bg-purple-600/10 animate-pulse"></div>
       
       <div className="relative flex items-center space-x-2 sm:space-x-4">
         {/* Logo with fallback icon */}
@@ -18,7 +18,7 @@ function Header() {
               e.target.nextSibling.style.display = 'flex';
             }}
           />
-          <div className="hidden w-8 sm:w-10 h-8 sm:h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg items-center justify-center">
+          <div className="hidden w-8 sm:w-10 h-8 sm:h-10 bg-purple-600 rounded-lg items-center justify-center">
             <svg className="w-4 sm:w-6 h-4 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
@@ -26,10 +26,10 @@ function Header() {
         </div>
         
         <div className="flex flex-col">
-          <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent animate-pulse">
-            Identifyou Chat
+          <h1 className="text-xl sm:text-2xl font-bold text-white-500 animate-pulse">
+            Together We Heal
           </h1>
-          <p className="text-xs text-gray-300 opacity-75 hidden sm:block">Real-time messaging platform</p>
+          <p className="text-xs text-gray-300 opacity-75 hidden sm:block">A safe space for those who've been hurt to be heard</p>
         </div>
       </div>
 

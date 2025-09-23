@@ -7,29 +7,57 @@ import ChatRoom from './components/ChatRoom.jsx'
 import ErrorDisplay from './components/ErrorDisplay.jsx'
 
 function App() {
-  const [currentStep, setCurrentStep] = useState('name') // 'name', 'room', 'chat'
+  const [currentStep, setCurrentStep] = useState('name') 
   const [username, setUsername] = useState('')
   const [roomname, setRoomname] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(true)
+  const [isSharedRoom, setIsSharedRoom] = useState(false)
 
-  // Restore session on app load
   useEffect(() => {
     const savedUser = localStorage.getItem("username")
     const savedRoom = localStorage.getItem("roomname")
+    
+    // Check for room parameter in URL
+    const urlParams = new URLSearchParams(window.location.search)
+    const roomFromUrl = urlParams.get('room')
 
-    if (savedUser && savedRoom) {
+    if (roomFromUrl) {
+      setRoomname(roomFromUrl)
+      setIsSharedRoom(true)
+      localStorage.setItem("roomname", roomFromUrl)
+      
+      if (savedUser) {
+        setUsername(savedUser)
+        setCurrentStep('chat')
+      } else {
+        // If no saved user, go to name form but skip room selection
+        setCurrentStep('name')
+      }
+      
+      // Update URL to remove the room parameter for cleaner experience
+      window.history.replaceState({}, '', window.location.pathname)
+    } else if (savedUser && savedRoom) {
+      // Normal session restoration
       setUsername(savedUser)
       setRoomname(savedRoom)
       setCurrentStep('chat')
     }
+    
     setIsLoading(false)
   }, [])
 
   const handleNameSubmit = (name) => {
     setUsername(name)
     localStorage.setItem("username", name)
-    setCurrentStep('room')
+    
+    // If room is already set (from URL), go directly to chat
+    if (roomname) {
+      setCurrentStep('chat')
+    } else {
+      setCurrentStep('room')
+    }
+    
     setError('')
   }
 
@@ -80,7 +108,12 @@ function App() {
       <ErrorDisplay error={error} />
       
       {currentStep === 'name' && (
-        <NameForm onSubmit={handleNameSubmit} onError={handleError} />
+        <NameForm 
+          onSubmit={handleNameSubmit} 
+          onError={handleError} 
+          isSharedRoom={isSharedRoom}
+          roomname={roomname}
+        />
       )}
       
       {currentStep === 'room' && (

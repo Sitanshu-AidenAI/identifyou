@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 
-function NameForm({ onSubmit, onError }) {
+function NameForm({ onSubmit, onError, isSharedRoom = false, roomname = '' }) {
   const [name, setName] = useState("");
   const [isAnimating, setIsAnimating] = useState(false);
+
+  // Check if this is a private room
+  const isPrivateRoom = roomname && roomname.match(/^[0-9a-f]{64}$/i)
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -54,12 +57,22 @@ function NameForm({ onSubmit, onError }) {
         <div className="bg-gray-800/80 backdrop-blur-lg rounded-2xl p-4 sm:p-6 md:p-4 lg:p-8 shadow-2xl border border-gray-700/50 max-w-sm sm:max-w-md w-full mx-4 transform  transition-all duration-300">
           {/* Welcome text */}
           <div className="text-center mb-6 sm:mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent mb-2">
-              Welcome!
+            <h2 className="text-2xl sm:text-3xl font-bold text-purple-400 mb-2">
+              {isSharedRoom ? 'Join Private Room!' : 'Welcome!'}
             </h2>
             <p className="text-gray-300 text-xs sm:text-sm">
-              Let's get you started with an amazing chat experience
+              {isSharedRoom 
+                ? `You've been invited to a private chat room${isPrivateRoom ? ' 🔒' : ''}` 
+                : "Let's get you started with an amazing chat experience"
+              }
             </p>
+            {isSharedRoom && isPrivateRoom && (
+              <div className="mt-3 p-2 bg-blue-600/20 border border-blue-600/30 rounded-lg">
+                <p className="text-blue-300 text-xs">
+                  🔗 Joining via shared link
+                </p>
+              </div>
+            )}
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
@@ -74,7 +87,7 @@ function NameForm({ onSubmit, onError }) {
                 autoFocus
                 maxLength={32}
               />
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-600/10 to-blue-600/10 pointer-events-none opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 rounded-xl bg-purple-600/10 pointer-events-none opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
             </div>
 
             {/* Character counter */}
@@ -92,15 +105,15 @@ function NameForm({ onSubmit, onError }) {
             <button
               type="submit"
               disabled={isAnimating}
-              className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-semibold py-3 sm:py-4 px-4 sm:px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-purple-400/30 text-sm sm:text-base"
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 sm:py-4 px-4 sm:px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-purple-400/30 text-sm sm:text-base"
             >
               {isAnimating ? (
                 <div className="flex items-center justify-center space-x-2">
                   <div className="w-4 sm:w-5 h-4 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  <span>Starting...</span>
+                  <span>{isSharedRoom ? 'Joining Room...' : 'Starting...'}</span>
                 </div>
               ) : (
-                "Continue to Chat"
+                isSharedRoom ? 'Join Private Room' : 'Continue to Chat'
               )}
             </button>
           </form>

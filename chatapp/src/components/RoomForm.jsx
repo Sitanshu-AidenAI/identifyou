@@ -26,7 +26,7 @@ function RoomForm({ onJoinRoom, onError, username }) {
   const handleCreatePrivate = async () => {
     setIsCreatingPrivate(true)
     try {
-      const hostname = "192.168.2.83:8787" || "127.0.0.1:8787"
+      const hostname = import.meta.env.VITE_HOST_NAME || "127.0.0.1:8787"
       const response = await fetch(`http://${hostname}/api/room`, { 
         method: "POST" 
       })
@@ -62,11 +62,11 @@ function RoomForm({ onJoinRoom, onError, username }) {
 
       <div className={`relative transform transition-all duration-500 ${(isJoining || isCreatingPrivate) ? 'scale-110 opacity-50' : 'scale-100 opacity-100'}`}>
         {/* Main card */}
-        <div className="bg-gray-800/80 backdrop-blur-lg rounded-2xl p-4 sm:p-6 md:p-7 lg:p-8 shadow-2xl border border-gray-700/50 max-w-sm sm:max-w-md md:max-w-lg w-full mx-4 transform hover:scale-105 transition-all duration-300">
+        <div className="bg-gray-800/80 backdrop-blur-lg rounded-2xl p-4 sm:p-6 md:p-7 lg:p-8 shadow-2xl border border-gray-700/50 max-w-sm sm:max-w-md md:max-w-lg w-full mx-4 transform transition-all duration-300">
           {/* Welcome back message */}
           <div className="text-center mb-6 sm:mb-8">
             <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-2">
-              Welcome back, <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{username}!</span>
+              Welcome back, <span className="text-purple-400">{username}!</span>
             </h2>
             <p className="text-gray-300 text-xs sm:text-sm md:text-base">Choose how you want to join the conversation</p>
           </div>
@@ -94,11 +94,11 @@ function RoomForm({ onJoinRoom, onError, username }) {
                       }
                     }}
                   />
-                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-green-600/10 to-blue-600/10 pointer-events-none opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 rounded-xl bg-green-600/10 pointer-events-none opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
                 </div>
                 
                 <button 
-                  className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold py-2 sm:py-3 md:py-4 px-4 sm:px-6 md:px-8 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-green-500/25 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-green-400/30 text-sm sm:text-base md:text-lg"
+                  className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 sm:py-3 md:py-4 px-4 sm:px-6 md:px-8 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-green-500/25 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-green-400/30 text-sm sm:text-base md:text-lg"
                   onClick={handleJoinPublic}
                   disabled={isCreatingPrivate || isJoining}
                 >
@@ -137,7 +137,7 @@ function RoomForm({ onJoinRoom, onError, username }) {
               </p>
               
               <button 
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-semibold py-2 sm:py-3 md:py-4 px-4 sm:px-6 md:px-8 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-blue-400/30 text-sm sm:text-base md:text-lg"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 sm:py-3 md:py-4 px-4 sm:px-6 md:px-8 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-blue-400/30 text-sm sm:text-base md:text-lg"
                 onClick={handleCreatePrivate}
                 disabled={isCreatingPrivate || isJoining}
               >

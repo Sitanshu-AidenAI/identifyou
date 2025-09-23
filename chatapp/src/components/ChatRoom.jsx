@@ -8,9 +8,10 @@ function ChatRoom({ username, roomname, onError, onDisconnect }) {
   const [isTyping, setIsTyping] = useState(false)
   const [connectedUsers, setConnectedUsers] = useState([])
   const [readyToChat, setReadyToChat] = useState(false) 
+  const [isProcessingBacklog, setIsProcessingBacklog] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
   const webSocketRef = useRef(null)
   const chatlogRef = useRef(null)
-  const heartbeatIntervalRef = useRef(null) 
 
   const userCount = connectedUsers.length
 
@@ -24,10 +25,6 @@ function ChatRoom({ username, roomname, onError, onDisconnect }) {
       if (webSocketRef.current) {
         webSocketRef.current.close()
         webSocketRef.current = null
-      }
-      if (heartbeatIntervalRef.current) {
-        clearInterval(heartbeatIntervalRef.current)
-        heartbeatIntervalRef.current = null
       }
     }
   }, [roomname]) // Only depend on roomname, not username
@@ -47,9 +44,15 @@ function ChatRoom({ username, roomname, onError, onDisconnect }) {
       return
     }
 
-    const cleanedRoomname = roomname.replace(/[^a-zA-Z0-9_-]/g, "").toLowerCase()
+    // Handle private room IDs (64-char hex) vs public room names
+    const cleanedRoomname = roomname.match(/^[0-9a-f]{64}$/i) 
+      ? roomname // Private room ID - keep as is
+      : roomname.replace(/[^a-zA-Z0-9_-]/g, "").toLowerCase() // Public room - clean and lowercase
     
-    const hostname = "192.168.2.83:8787" || import.meta.env.VITE_HOST_NAME
+    console.log(`🏠 Room processing: "${roomname}" -> "${cleanedRoomname}"`)
+    console.log(`🔍 Is private room: ${roomname.match(/^[0-9a-f]{64}$/i) ? 'Yes' : 'No'}`)
+    
+    const hostname = import.meta.env.VITE_HOST_NAME || "127.0.0.1:8787"
     const wsUrl = `ws://${hostname}/api/room/${cleanedRoomname}/websocket`
     console.log(`🔗 Connecting to ${wsUrl}`)
     
@@ -87,15 +90,10 @@ function ChatRoom({ username, roomname, onError, onDisconnect }) {
         clearTimeout(connectionTimeout)
         setIsConnected(true)
         setReadyToChat(false) // Reset ready state
+        setIsProcessingBacklog(true) // Start processing backlog
         
         const initMessage = JSON.stringify({ name: username })
         ws.send(initMessage)
-
-        heartbeatIntervalRef.current = setInterval(() => {
-          if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ type: "ping" }))
-          }
-        }, 20000)
         
         resolve()
       })
@@ -104,25 +102,35 @@ function ChatRoom({ username, roomname, onError, onDisconnect }) {
         try {
           const data = JSON.parse(e.data)
           
-          if (data.type === "pong") {
-            return // Just acknowledge, no action needed
-          }
-          
           if (data.message) {
-            addMessage(data.name, data.message)
+            // Add message with backlog indicator
+            addMessage(data.name, data.message, 'message', isProcessingBacklog)
           } else if (data.joined) {
-            addMessage(null, `${data.joined} joined the room`, 'system')
-            // Add the joined user to the list (avoid duplicates)
+            // During backlog, this represents existing users
+            if (isProcessingBacklog) {
+              console.log(`👥 Existing user discovered: ${data.joined}`)
+            } else {
+              // Show personalized join message
+              const joinMessage = data.joined === username 
+                ? "You joined the room" 
+                : `${data.joined} joined the room`
+              addMessage(null, joinMessage, 'system')
+              console.log(`👤 New user joined: ${data.joined}`)
+            }
+            
+            // Add user to connected list (avoid duplicates)
             setConnectedUsers(prev => {
               if (!prev.includes(data.joined)) {
-                console.log(`👤 User joined: ${data.joined}, current list:`, [...prev, data.joined])
                 return [...prev, data.joined]
               }
-              console.log(`👤 User ${data.joined} already in list, current list:`, prev)
               return prev
             })
           } else if (data.quit) {
-            addMessage(null, `${data.quit} left the room`, 'system')
+            // Show personalized quit message
+            const quitMessage = data.quit === username 
+              ? "You left the room" 
+              : `${data.quit} left the room`
+            addMessage(null, quitMessage, 'system')
             // Remove the user who quit
             setConnectedUsers(prev => {
               const newList = prev.filter(user => user !== data.quit)
@@ -134,13 +142,15 @@ function ChatRoom({ username, roomname, onError, onDisconnect }) {
             onError(data.error)
           } else if (data.ready) {
             setReadyToChat(true) // Now allow sending messages
+            setIsProcessingBacklog(false) // Stop backlog processing
+            console.log(`✅ Ready to chat! Backlog processing complete.`)
+            
             // Add current user to connected users list when ready
             setConnectedUsers(prev => {
               if (!prev.includes(username)) {
-                console.log(`✅ Current user ready: ${username}, total users:`, [...prev, username])
+                console.log(`✅ Current user ready: ${username}`)
                 return [...prev, username]
               }
-              console.log(`✅ Current user ${username} already in list:`, prev)
               return prev
             })
           }
@@ -153,15 +163,10 @@ function ChatRoom({ username, roomname, onError, onDisconnect }) {
         console.log(`🔌 WebSocket closed: code=${e.code}, reason="${e.reason}", wasClean=${e.wasClean}`)
         clearTimeout(connectionTimeout)
         
-        // Clear heartbeat interval
-        if (heartbeatIntervalRef.current) {
-          clearInterval(heartbeatIntervalRef.current)
-          heartbeatIntervalRef.current = null
-        }
-        
         setIsConnected(false)
         setIsConnecting(false)
         setReadyToChat(false)
+        setIsProcessingBacklog(false)
         // Clear connected users when disconnected
         setConnectedUsers([])
         
@@ -178,14 +183,10 @@ function ChatRoom({ username, roomname, onError, onDisconnect }) {
         console.error("WebSocket state:", ws.readyState, "URL:", ws.url)
         clearTimeout(connectionTimeout)
         
-        if (heartbeatIntervalRef.current) {
-          clearInterval(heartbeatIntervalRef.current)
-          heartbeatIntervalRef.current = null
-        }
-        
         setIsConnected(false)
         setIsConnecting(false)
         setReadyToChat(false)
+        setIsProcessingBacklog(false)
         // Clear connected users when there's an error
         setConnectedUsers([])
         reject(new Error(`WebSocket error (readyState: ${ws.readyState})`))
@@ -193,14 +194,15 @@ function ChatRoom({ username, roomname, onError, onDisconnect }) {
     })
   }
 
-  const addMessage = (name, text, type = 'message') => {
+  const addMessage = (name, text, type = 'message', isBacklog = false) => {
     const newMessage = {
       id: Date.now() + Math.random(),
       name,
       text,
       timestamp: new Date(),
       type,
-      isOwn: name === username
+      isOwn: name === username,
+      isBacklog // Mark if this is a historical message
     }
     setMessages(prev => [...prev, newMessage])
   }
@@ -236,6 +238,44 @@ function ChatRoom({ username, roomname, onError, onDisconnect }) {
   const handleInputChange = (e) => {
     setCurrentMessage(e.target.value)
     setIsTyping(e.target.value.length > 0)
+  }
+
+  const shareRoom = async () => {
+    try {
+      // Check if this is a private room (64-char hex)
+      const isPrivateRoom = roomname.match(/^[0-9a-f]{64}$/i)
+      
+      if (!isPrivateRoom) {
+        onError("Only private rooms can be shared. Public rooms can be joined by room name.")
+        return
+      }
+
+      const shareUrl = `${window.location.origin}${window.location.pathname}?room=${roomname}`
+      
+      // Try to use the modern Clipboard API
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(shareUrl)
+      } else {
+        // Fallback for older browsers or non-secure contexts
+        const textArea = document.createElement('textarea')
+        textArea.value = shareUrl
+        textArea.style.position = 'fixed'
+        textArea.style.left = '-999999px'
+        textArea.style.top = '-999999px'
+        document.body.appendChild(textArea)
+        textArea.focus()
+        textArea.select()
+        document.execCommand('copy')
+        textArea.remove()
+      }
+      
+      setLinkCopied(true)
+      setTimeout(() => setLinkCopied(false), 3000) // Reset after 3 seconds
+      
+    } catch (err) {
+      console.error('Failed to copy link:', err)
+      onError("Failed to copy room link to clipboard")
+    }
   }
 
   return (
@@ -291,34 +331,53 @@ function ChatRoom({ username, roomname, onError, onDisconnect }) {
               ) : (
                 <div className={`max-w-[75%] sm:max-w-xs lg:max-w-md xl:max-w-lg ${msg.isOwn ? 'order-2' : 'order-1'}`}>
                   <div className={`relative group ${msg.isOwn 
-                    ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white ml-auto' 
+                    ? 'bg-purple-600 text-white ml-auto' 
                     : 'bg-gray-700/80 backdrop-blur-sm text-gray-100'
-                  } rounded-2xl px-3 sm:px-4 py-2 sm:py-3 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105`}>
+                  } rounded-2xl px-3 sm:px-4 py-2 sm:py-3 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 ${
+                    msg.isBacklog ? 'opacity-75 border border-gray-600/50' : ''
+                  }`}>
                     
                     {!msg.isOwn && (
-                      <div className="text-xs font-semibold text-purple-400 mb-1">
+                      <div className="text-xs font-semibold text-purple-400 mb-1 flex items-center">
                         {msg.name}
+                        {msg.isBacklog && <span className="ml-2 text-gray-400 text-xs">📜</span>}
                       </div>
                     )}
                     
                     <div className="text-sm leading-relaxed break-words">
                       {msg.text}
                     </div>
+                    
+                    {msg.isOwn && msg.isBacklog && (
+                      <div className="text-xs text-gray-300 mt-1 opacity-75">📜 Historical</div>
+                    )}
                   </div>
                 </div>
               )}
             </div>
           ))}
           
-          {messages.length === 0 && (
+          {messages.length === 0 && !isProcessingBacklog && (
             <div className="flex flex-col items-center justify-center h-full text-center px-4">
-              <div className="w-12 sm:w-16 h-12 sm:h-16 mb-4 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+              <div className="w-12 sm:w-16 h-12 sm:h-16 mb-4 bg-purple-600 rounded-full flex items-center justify-center">
                 <svg className="w-6 sm:w-8 h-6 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
               </div>
               <h3 className="text-lg sm:text-xl font-semibold text-gray-300 mb-2">Welcome to the chat!</h3>
               <p className="text-sm sm:text-base text-gray-400">Start the conversation by sending your first message</p>
+            </div>
+          )}
+          
+          {isProcessingBacklog && (
+            <div className="flex flex-col items-center justify-center h-full text-center px-4">
+              <div className="w-12 sm:w-16 h-12 sm:h-16 mb-4 bg-blue-600 rounded-full flex items-center justify-center animate-pulse">
+                <svg className="w-6 sm:w-8 h-6 sm:h-8 text-white animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </div>
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-300 mb-2">Loading chat history...</h3>
+              <p className="text-sm sm:text-base text-gray-400">Retrieving messages and user list</p>
             </div>
           )}
         </div>
@@ -345,7 +404,7 @@ function ChatRoom({ username, roomname, onError, onDisconnect }) {
             <button
               onClick={sendMessage}
               disabled={!isConnected || !readyToChat || !currentMessage.trim()}
-              className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 disabled:from-gray-600 disabled:to-gray-600 text-white p-2 sm:p-3 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:cursor-not-allowed disabled:transform-none focus:outline-none focus:ring-4 focus:ring-purple-400/30"
+              className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white p-2 sm:p-3 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:cursor-not-allowed disabled:transform-none focus:outline-none focus:ring-4 focus:ring-purple-400/30"
             >
               <svg className="w-4 sm:w-5 h-4 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
@@ -367,8 +426,16 @@ function ChatRoom({ username, roomname, onError, onDisconnect }) {
           </h4>
           <div className="space-y-2 text-xs sm:text-sm">
             <div className="flex justify-between">
+              <span className="text-gray-400">Type:</span>
+              <span className="text-white font-medium">
+                {roomname.match(/^[0-9a-f]{64}$/i) ? '🔒 Private' : '🌐 Public'}
+              </span>
+            </div>
+            <div className="flex justify-between">
               <span className="text-gray-400">Name:</span>
-              <span className="text-white font-medium truncate ml-2">#{roomname}</span>
+              <span className="text-white font-medium truncate ml-2">
+                #{roomname.match(/^[0-9a-f]{64}$/i) ? roomname.substring(0, 8) + '...' : roomname}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">Users:</span>
@@ -384,9 +451,10 @@ function ChatRoom({ username, roomname, onError, onDisconnect }) {
         {/* Online Users List */}
         <div className="bg-gradient-to-r from-gray-700/50 to-gray-600/50 rounded-xl p-3 sm:p-4 border border-gray-600/30">
           <h4 className="font-semibold text-white mb-3 flex items-center text-sm sm:text-base">
-            <svg className="w-4 sm:w-5 h-4 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {/* <svg className="w-4 sm:w-5 h-4 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5 0a4 4 0 11-8-1.464" />
-            </svg>
+            </svg> */}
+            <img src='/icons8-users-32 (2).png' alt='online users' className="w-4 sm:w-5 h-4 sm:h-5 mr-2 " />
             Online Users ({connectedUsers.length})
           </h4>
           <div className="space-y-2 max-h-24 sm:max-h-32 lg:max-h-40 overflow-y-auto">
@@ -433,10 +501,36 @@ function ChatRoom({ username, roomname, onError, onDisconnect }) {
 
         {/* Action Buttons */}
         <div className="space-y-2">
+          {/* Share Room Button - Only for private rooms */}
+          {roomname.match(/^[0-9a-f]{64}$/i) && (
+            <button 
+              onClick={shareRoom}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-400/30 text-xs sm:text-sm"
+            >
+              <div className="flex items-center justify-center space-x-2">
+                {linkCopied ? (
+                  <>
+                    <svg className="w-3 sm:w-4 h-3 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Link Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-3 sm:w-4 h-3 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                    </svg>
+                    <span>Share Room</span>
+                  </>
+                )}
+              </div>
+            </button>
+          )}
+          
           {!isConnected && (
             <button 
               onClick={connectToRoom}
-              className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-400/30 text-xs sm:text-sm"
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-400/30 text-xs sm:text-sm"
             >
               <div className="flex items-center justify-center space-x-2">
                 <svg className="w-3 sm:w-4 h-3 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -449,7 +543,7 @@ function ChatRoom({ username, roomname, onError, onDisconnect }) {
           
           <button 
             onClick={onDisconnect}
-            className="w-full bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-400/30 text-xs sm:text-sm"
+            className="w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-3 sm:px-4 rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-400/30 text-xs sm:text-sm"
           >
             <div className="flex items-center justify-center space-x-2">
               <svg className="w-3 sm:w-4 h-3 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
