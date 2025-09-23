@@ -26,7 +26,7 @@ function RoomForm({ onJoinRoom, onError, username }) {
   const handleCreatePrivate = async () => {
     setIsCreatingPrivate(true)
     try {
-      const hostname = "127.0.0.1:8787"
+      const hostname = "192.168.2.83:8787" || "127.0.0.1:8787"
       const response = await fetch(`http://${hostname}/api/room`, { 
         method: "POST" 
       })

@@ -49,7 +49,7 @@ function ChatRoom({ username, roomname, onError, onDisconnect }) {
 
     const cleanedRoomname = roomname.replace(/[^a-zA-Z0-9_-]/g, "").toLowerCase()
     
-    const hostname = "192.168.2.96:8787" || import.meta.env.VITE_HOST_NAME
+    const hostname = "192.168.2.83:8787" || import.meta.env.VITE_HOST_NAME
     const wsUrl = `ws://${hostname}/api/room/${cleanedRoomname}/websocket`
     console.log(`🔗 Connecting to ${wsUrl}`)
     

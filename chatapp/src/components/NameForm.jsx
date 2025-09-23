@@ -51,7 +51,7 @@ function NameForm({ onSubmit, onError }) {
         }`}
       >
         {/* Main card */}
-        <div className="bg-gray-800/80 backdrop-blur-lg rounded-2xl p-4 sm:p-6 md:p-4 lg:p-8 shadow-2xl border border-gray-700/50 max-w-sm sm:max-w-md w-full mx-4 transform hover:scale-105 transition-all duration-300">
+        <div className="bg-gray-800/80 backdrop-blur-lg rounded-2xl p-4 sm:p-6 md:p-4 lg:p-8 shadow-2xl border border-gray-700/50 max-w-sm sm:max-w-md w-full mx-4 transform  transition-all duration-300">
           {/* Welcome text */}
           <div className="text-center mb-6 sm:mb-8">
             <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent mb-2">
