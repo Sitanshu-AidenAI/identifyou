@@ -13,9 +13,9 @@ class_name = "RateLimiter"
 
 # Durable Object migrations (required)
 [[migrations]]
-tag = "v1"
-new_classes = ["ChatRoom", "RateLimiter"]
+tag = "v1"   # if you’ve already tried v1, change this to v2
+new_sqlite_classes = ["ChatRoom", "RateLimiter"]
 
-# Optional: serve static assets (chat.html, chat.js, logo.png, etc.)
+# Optional: serve static assets
 [assets]
 directory = "src"
