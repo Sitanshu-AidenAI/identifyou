@@ -16,6 +16,6 @@ class_name = "RateLimiter"
 tag = "v1"   # if you’ve already tried v1, change this to v2
 new_sqlite_classes = ["ChatRoom", "RateLimiter"]
 
-# Optional: serve static assets
+# Serve React build instead of old static HTML
 [assets]
-directory = "src"
+directory = "chatapp/dist"

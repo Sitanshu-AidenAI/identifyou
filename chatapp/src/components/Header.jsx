@@ -2,7 +2,7 @@ import React from 'react'
 
 function Header() {
   return (
-    <header className="relative flex items-center justify-between p-2 sm:p-4 bg-gradient-to-r from-gray-900 via-purple-900 to-gray-900 text-white shadow-2xl border-b border-purple-500/20 flex-shrink-0">
+    <header className="relative flex items-center justify-between p-2 sm:p-4 bg-gradient-to-br from-gray-900 via-blue-900/90 to-gray-800 text-white shadow-2xl border-b border-purple-500/20 flex-shrink-0">
       {/* Animated background gradient */}
       <div className="absolute inset-0 bg-purple-600/10 animate-pulse"></div>
       

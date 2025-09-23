@@ -26,7 +26,7 @@ function NameForm({ onSubmit, onError, isSharedRoom = false, roomname = '' }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-gradient-to-br from-gray-900 via-purple-900/80 to-gray-900 backdrop-blur-sm flex flex-col justify-center items-center animate-fadeIn p-4">
+    <div className="fixed inset-0 z-50 bg-gradient-to-br from-gray-900 via-blue-900/80 to-gray-900 backdrop-blur-sm flex flex-col justify-center items-center animate-fadeIn p-4">
       {/* Floating particles effect */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-purple-400/30 rounded-full animate-float"></div>
@@ -57,7 +57,7 @@ function NameForm({ onSubmit, onError, isSharedRoom = false, roomname = '' }) {
         <div className="bg-gray-800/80 backdrop-blur-lg rounded-2xl p-4 sm:p-6 md:p-4 lg:p-8 shadow-2xl border border-gray-700/50 max-w-sm sm:max-w-md w-full mx-4 transform  transition-all duration-300">
           {/* Welcome text */}
           <div className="text-center mb-6 sm:mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-purple-400 mb-2">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-2 text-white">
               {isSharedRoom ? 'Join Private Room!' : 'Welcome!'}
             </h2>
             <p className="text-gray-300 text-xs sm:text-sm">
@@ -105,7 +105,7 @@ function NameForm({ onSubmit, onError, isSharedRoom = false, roomname = '' }) {
             <button
               type="submit"
               disabled={isAnimating}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 sm:py-4 px-4 sm:px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-purple-400/30 text-sm sm:text-base"
+              className="w-full bg-gradient-to-br from-gray-900 via-blue-900/80 to-gray-900 backdrop-blur-sm hover:bg-purple-700 text-white font-semibold py-3 sm:py-4 px-4 sm:px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-purple-400/30 text-sm sm:text-base"
             >
               {isAnimating ? (
                 <div className="flex items-center justify-center space-x-2">

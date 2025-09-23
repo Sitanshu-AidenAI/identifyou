@@ -26,10 +26,9 @@ function RoomForm({ onJoinRoom, onError, username }) {
   const handleCreatePrivate = async () => {
     setIsCreatingPrivate(true)
     try {
-      const hostname = import.meta.env.VITE_HOST_NAME || "127.0.0.1:8787"
-      const response = await fetch(`http://${hostname}/api/room`, { 
-        method: "POST" 
-      })
+      const host = import.meta.env.VITE_HOST_NAME || window.location.host
+      const protocol = window.location.protocol === "https:" ? "https://" : "http://"
+      const response = await fetch(`${protocol}${host}/api/room`, { method: "POST" })
       
       if (!response.ok) {
         throw new Error(`Failed to create room (${response.status})`)
@@ -66,7 +65,7 @@ function RoomForm({ onJoinRoom, onError, username }) {
           {/* Welcome back message */}
           <div className="text-center mb-6 sm:mb-8">
             <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-2">
-              Welcome back, <span className="text-purple-400">{username}!</span>
+              Welcome back, <span className="text-white">{username}!</span>
             </h2>
             <p className="text-gray-300 text-xs sm:text-sm md:text-base">Choose how you want to join the conversation</p>
           </div>
