@@ -1,5 +1,5 @@
 // This is the Edge Chat Demo Worker, built using Durable Objects!
-import HTML from "./chat.html";
+import HTML from "../chatapp/dist/index.html";
 
 async function handleErrors(request, func) {
   try {
@@ -23,18 +23,15 @@ export default {
       let url = new URL(request.url);
       let path = url.pathname.slice(1).split("/");
 
-      if (!path[0]) {
-        return new Response(HTML, {
-          headers: { "Content-Type": "text/html;charset=UTF-8" },
-        });
-      }
+        // ✅ Handle API first
+        if (path[0] === "api") {
+        return handleApiRequest(path.slice(1), request, env);
+        }
 
-      switch (path[0]) {
-        case "api":
-          return handleApiRequest(path.slice(1), request, env);
-        default:
-          return new Response("Not found", { status: 404 });
-      }
+        // ✅ Serve SPA HTML for any other route
+        return new Response(HTML, {
+        headers: { "Content-Type": "text/html;charset=UTF-8" },
+        });
     });
   },
 };

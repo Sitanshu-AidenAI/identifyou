@@ -19,3 +19,4 @@ new_sqlite_classes = ["ChatRoom", "RateLimiter"]
 # Serve React build instead of old static HTML
 [assets]
 directory = "chatapp/dist"
+not_found_handling = "single-page-application"

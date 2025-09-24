@@ -123,9 +123,9 @@ function IdentifYouLanding() {
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold mb-6 text-white">
-            We Are Making Stronger
+            We Are Making Generations
             <br />
-            <span className="text-purple-400">and Better Generations</span>
+            <span className="text-purple-400">Stronger and Better</span>
           </h1>
 
           <p className="text-lg sm:text-xl lg:text-2xl text-gray-300 mb-4 max-w-3xl mx-auto leading-relaxed">
