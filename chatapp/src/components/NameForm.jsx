@@ -26,7 +26,7 @@ function NameForm({ onSubmit, onError, isSharedRoom = false, roomname = '' }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-gradient-to-br from-gray-900 via-blue-900/80 to-gray-900 backdrop-blur-sm flex flex-col justify-center items-center animate-fadeIn p-4">
+    <div className="fixed inset-0 z-50 bg-gradient-to-br from-gray-900 via-blue-900/80 to-gray-900 backdrop-blur-sm flex flex-col justify-center items-center animate-fadeIn p-3 sm:p-4">
       {/* Floating particles effect */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-purple-400/30 rounded-full animate-float"></div>
@@ -43,31 +43,37 @@ function NameForm({ onSubmit, onError, isSharedRoom = false, roomname = '' }) {
           style={{ animationDelay: "0.5s" }}
         ></div>
       </div>
-      <div className="sm:py-4 lg:py-6 my-10 rounded-xl shadow-2xl border border-gray-300/50 max-w-lg">
-        <div className="flex justify-center items-center">
-          <img src="/logo.png" alt="Company Logo" className="h-12 mx-4" />
+      
+      {/* Logo container */}
+      <div className="mb-6 sm:mb-8 md:mb-6 lg:mb-8">
+        <div className="bg-gray-800/60 backdrop-blur-lg py-3 sm:py-4 md:py-3 lg:py-4 px-6 sm:px-8 md:px-6 lg:px-8 rounded-xl shadow-2xl border border-gray-300/50">
+          <div className="flex justify-center items-center">
+            <img src="/logo.png" alt="Company Logo" className="h-8 sm:h-10 md:h-8 lg:h-12" />
+          </div>
         </div>
       </div>
+
       <div
         className={`relative transform transition-all duration-500 ${
           isAnimating ? "scale-110 opacity-50" : "scale-100 opacity-100"
         }`}
       >
-        {/* Main card */}
-        <div className="bg-gray-800/80 backdrop-blur-lg rounded-2xl p-4 sm:p-6 md:p-4 lg:p-8 shadow-2xl border border-gray-700/50 max-w-sm sm:max-w-md w-full mx-4 transform  transition-all duration-300">
+        {/* Main card - Optimized for laptop screens */}
+        <div className="bg-gray-800/80 backdrop-blur-lg rounded-2xl p-4 sm:p-5 md:p-4 lg:p-6 shadow-2xl border border-gray-700/50 w-full max-w-xs sm:max-w-sm md:max-w-xs lg:max-w-md mx-3 sm:mx-4 transform transition-all duration-300">
+          
           {/* Welcome text */}
-          <div className="text-center mb-6 sm:mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-2 text-white">
+          <div className="text-center mb-4 sm:mb-6 md:mb-4 lg:mb-6">
+            <h2 className="text-xl sm:text-2xl md:text-xl lg:text-2xl font-bold mb-2 text-white">
               {isSharedRoom ? 'Join Private Room!' : 'Welcome!'}
             </h2>
-            <p className="text-gray-300 text-xs sm:text-sm">
+            <p className="text-gray-300 text-xs sm:text-sm md:text-xs lg:text-sm leading-relaxed">
               {isSharedRoom 
                 ? `You've been invited to a private chat room${isPrivateRoom ? ' 🔒' : ''}` 
                 : "Let's get you started with an amazing chat experience"
               }
             </p>
             {isSharedRoom && isPrivateRoom && (
-              <div className="mt-3 p-2 bg-blue-600/20 border border-blue-600/30 rounded-lg">
+              <div className="mt-2 sm:mt-3 p-2 bg-blue-600/20 border border-blue-600/30 rounded-lg">
                 <p className="text-blue-300 text-xs">
                   🔗 Joining via shared link
                 </p>
@@ -75,11 +81,11 @@ function NameForm({ onSubmit, onError, isSharedRoom = false, roomname = '' }) {
             )}
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-            {/* Input field */}
+          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 md:space-y-3 lg:space-y-4">
+            {/* Input field - Better sizing for laptops */}
             <div className="relative">
               <input
-                className="w-full text-sm sm:text-lg p-3 sm:p-4 bg-gray-700/50 backdrop-blur-sm border-2 border-gray-600/50 rounded-xl text-white placeholder-gray-400 outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-400/20 transition-all duration-300 hover:border-gray-500"
+                className="w-full text-sm sm:text-base md:text-sm lg:text-base p-3 sm:p-3.5 md:p-3 lg:p-4 bg-gray-700/50 backdrop-blur-sm border-2 border-gray-600/50 rounded-xl text-white placeholder-gray-400 outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-400/20 transition-all duration-300 hover:border-gray-500"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -101,26 +107,30 @@ function NameForm({ onSubmit, onError, isSharedRoom = false, roomname = '' }) {
               </span>
             </div>
 
-            {/* Submit button */}
+            {/* Submit button - Compact for laptops */}
             <button
               type="submit"
               disabled={isAnimating}
-              className="w-full bg-gradient-to-br from-gray-900 via-blue-900/80 to-gray-900 backdrop-blur-sm hover:bg-purple-700 text-white font-semibold py-3 sm:py-4 px-4 sm:px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-purple-400/30 text-sm sm:text-base"
+              className="w-full bg-gradient-to-br from-gray-900 via-blue-900/80 to-gray-900 backdrop-blur-sm hover:bg-purple-700 text-white font-semibold py-3 sm:py-3.5 md:py-3 lg:py-4 px-4 sm:px-5 md:px-4 lg:px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-purple-400/30 text-sm sm:text-base md:text-sm lg:text-base"
             >
               {isAnimating ? (
                 <div className="flex items-center justify-center space-x-2">
-                  <div className="w-4 sm:w-5 h-4 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  <span>{isSharedRoom ? 'Joining Room...' : 'Starting...'}</span>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <span className="text-sm sm:text-base md:text-sm lg:text-base">
+                    {isSharedRoom ? 'Joining Room...' : 'Starting...'}
+                  </span>
                 </div>
               ) : (
-                isSharedRoom ? 'Join Private Room' : 'Continue to Chat'
+                <span className="text-sm sm:text-base md:text-sm lg:text-base">
+                  {isSharedRoom ? 'Join Private Room' : 'Continue to Chat'}
+                </span>
               )}
             </button>
           </form>
 
-          {/* Footer */}
-          <div className="text-center mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-700/50">
-            <p className="text-xs sm:text-sm text-gray-400 mb-2">Powered by</p>
+          {/* Footer - Compact */}
+          <div className="text-center mt-4 sm:mt-6 md:mt-4 lg:mt-6 pt-3 sm:pt-4 md:pt-3 lg:pt-4 border-t border-gray-700/50">
+            <p className="text-xs text-gray-400 mb-1.5 sm:mb-2">Powered by</p>
             <a
               href="https://www.aidenai.com/"
               target="_blank"
