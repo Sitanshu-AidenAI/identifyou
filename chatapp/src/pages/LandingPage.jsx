@@ -40,10 +40,11 @@ function IdentifYouLanding() {
     <header className="relative flex items-center justify-between p-4 bg-gray-900 text-white shadow-2xl border-b border-purple-500/20 z-50">
       <div className="absolute inset-0 bg-purple-600/5"></div>
 
-      <div className="relative flex items-center space-x-4">
+      <div className="relative flex items-center justify-between space-x-4">
         <div className="flex items-center justify-center">
           <img src="/logo.png" alt="IdentifYou Logo" className="w-44 h-10" />
         </div>
+        <button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 cursor-pointer" onClick={() => navigate("/auth")}>Sign In</button>
       </div>
 
       {/* Desktop Navigation */}

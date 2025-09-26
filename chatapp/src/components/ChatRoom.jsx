@@ -10,6 +10,7 @@ function ChatRoom({ username, roomname, onError, onDisconnect }) {
   const [readyToChat, setReadyToChat] = useState(false);
   const [isProcessingBacklog, setIsProcessingBacklog] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const webSocketRef = useRef(null);
   const chatlogRef = useRef(null);
 
@@ -19,7 +20,7 @@ function ChatRoom({ username, roomname, onError, onDisconnect }) {
     connectToRoom();
     // Reset connected users when connecting to a new room
     setConnectedUsers([]);
-    console.log(`🏠 Connecting to room: ${roomname}`);
+    // console.log(`🏠 Connecting to room: ${roomname}`);
 
     return () => {
       if (webSocketRef.current) {
@@ -40,9 +41,9 @@ function ChatRoom({ username, roomname, onError, onDisconnect }) {
 
   const connectToRoom = async () => {
     if (isConnecting || isConnected) {
-      console.log(
-        "Already connecting or connected, skipping connection attempt"
-      );
+      // console.log(
+      //   "Already connecting or connected, skipping connection attempt"
+      // );
       return;
     }
 
@@ -51,20 +52,20 @@ function ChatRoom({ username, roomname, onError, onDisconnect }) {
       ? roomname // Private room ID - keep as is
       : roomname.replace(/[^a-zA-Z0-9_-]/g, "").toLowerCase(); // Public room - clean and lowercase
 
-    console.log(`🏠 Room processing: "${roomname}" -> "${cleanedRoomname}"`);
-    console.log(
-      `🔍 Is private room: ${roomname.match(/^[0-9a-f]{64}$/i) ? "Yes" : "No"}`
-    );
+    // console.log(`🏠 Room processing: "${roomname}" -> "${cleanedRoomname}"`);
+    // console.log(
+    //   `🔍 Is private room: ${roomname.match(/^[0-9a-f]{64}$/i) ? "Yes" : "No"}`
+    // );
 
     const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
     const host = import.meta.env.VITE_HOST_NAME || window.location.host;
     const wsUrl = `${protocol}${host}/api/room/${cleanedRoomname}/websocket`;
-    console.log(`🔗 Connecting to ${wsUrl}`);
+    // console.log(`🔗 Connecting to ${wsUrl}`);
 
     setIsConnecting(true);
     try {
       await attemptConnection(wsUrl);
-      console.log(`✅ Successfully connected to ${host}`);
+      // console.log(`✅ Successfully connected to ${host}`);
     } catch (error) {
       console.error("Connection failed:", error);
       onError(
@@ -157,7 +158,7 @@ function ChatRoom({ username, roomname, onError, onDisconnect }) {
           } else if (data.ready) {
             setReadyToChat(true); // Now allow sending messages
             setIsProcessingBacklog(false); // Stop backlog processing
-            console.log(`✅ Ready to chat! Backlog processing complete.`);
+            // console.log(`✅ Ready to chat! Backlog processing complete.`);
 
             // Add current user to connected users list when ready
             setConnectedUsers((prev) => {
@@ -326,6 +327,26 @@ function ChatRoom({ username, roomname, onError, onDisconnect }) {
             </div>
 
             <div className="flex items-center space-x-2">
+              {/* Mobile Sidebar Toggle Button */}
+              <button
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="lg:hidden p-2 rounded-lg bg-gray-600/50 hover:bg-gray-600/80 transition-colors duration-200"
+              >
+                <svg
+                  className="w-5 h-5 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                </svg>
+              </button>
+              
               {isTyping && (
                 <div className="flex items-center space-x-1 text-xs text-gray-400">
                   <div className="flex space-x-1">
@@ -507,8 +528,50 @@ function ChatRoom({ username, roomname, onError, onDisconnect }) {
         </div>
       </div>
 
-      {/* Sidebar */}
-      <div className="w-full lg:w-64 bg-gray-800/60 backdrop-blur-lg rounded-2xl shadow-2xl border border-gray-700/50 p-3 sm:p-4 space-y-3 sm:space-y-4 flex flex-col">
+      {/* Sidebar - Hidden on mobile by default, overlay when toggled */}
+      <div className={`
+        ${isSidebarOpen ? 'fixed inset-0 z-50 lg:relative lg:inset-auto' : 'hidden lg:block'}
+        lg:w-64 lg:relative lg:z-auto
+      `}>
+        {/* Mobile Backdrop */}
+        {isSidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm lg:hidden"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
+        
+        {/* Sidebar Content */}
+        <div className={`
+          ${isSidebarOpen ? 'fixed right-0 top-0 h-full w-80 max-w-[90vw] lg:relative lg:w-64 lg:h-auto' : 'lg:w-64'}
+          bg-gray-800/90 backdrop-blur-lg rounded-none lg:rounded-2xl shadow-2xl border-l border-gray-700/50 lg:border lg:border-gray-700/50 p-3 sm:p-4 space-y-3 sm:space-y-4 flex flex-col
+        `}>
+        
+        {/* Mobile Close Button */}
+        {isSidebarOpen && (
+          <div className="flex justify-between items-center lg:hidden mb-2">
+            <h3 className="text-lg font-semibold text-white">Room Info</h3>
+            <button
+              onClick={() => setIsSidebarOpen(false)}
+              className="p-2 rounded-lg bg-gray-700/50 hover:bg-gray-700/80 transition-colors duration-200"
+            >
+              <svg
+                className="w-5 h-5 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+        )}
+
         {/* Sidebar Content Container with Scroll */}
         <div className="flex-1 overflow-y-auto space-y-3 sm:space-y-4 min-h-0 max-h-[calc(100vh-200px)] lg:max-h-[calc(100vh-150px)]">
           {/* Room Info */}
@@ -725,7 +788,8 @@ function ChatRoom({ username, roomname, onError, onDisconnect }) {
             </div>
           </button>
         </div>
-      </div>
+        </div>
+      </div> 
     </main>
   );
 }

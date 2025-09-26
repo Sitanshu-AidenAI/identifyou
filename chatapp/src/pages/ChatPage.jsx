@@ -71,6 +71,10 @@ function ChatPage() {
     setError(errorMessage)
   }
 
+  const clearError = () => {
+    setError('')
+  }
+
   const resetToNameForm = () => {
     setCurrentStep('name')
     setUsername('')
@@ -104,7 +108,7 @@ function ChatPage() {
 
       <Header />
       
-      <ErrorDisplay error={error} />
+      <ErrorDisplay error={error} onClearError={clearError} />
       
       {currentStep === 'name' && (
         <NameForm 
