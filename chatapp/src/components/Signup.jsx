@@ -95,7 +95,7 @@ export default function Signup({ setIsSigningIn }) {
         <p className="text-gray-300">Join our community today</p>
       </div>
 
-      <form onSubmit={handleSignUp} className="space-y-5">
+      <form onSubmit={handleSignUp} autoComplete="off" className="space-y-5">
         {/* Email Input */}
         <div className="relative">
           <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-purple-400" />
@@ -203,7 +203,7 @@ export default function Signup({ setIsSigningIn }) {
         <button
           type="submit"
           disabled={loading || !email || !password || password !== confirmPassword}
-          className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-purple-500/30 cursor-pointer"
+          className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-purple-500/30 cursor-pointer"
         >
           {loading ? (
             <div className="flex items-center justify-center">

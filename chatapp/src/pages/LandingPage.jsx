@@ -6,15 +6,15 @@ import {
   MessageCircle,
   Target,
   ArrowRight,
-  CheckCircle,
-  Star,
-  Menu,
-  X,
 } from "lucide-react";
+import { supabase } from "../../supabaseClient";
 import { useNavigate } from "react-router-dom";
+import FormSidebar from "../components/FormSidebar";
 
 function IdentifYouLanding() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [session, setSession] = useState(null);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -30,6 +30,37 @@ function IdentifYouLanding() {
     };
   }, [isMenuOpen]);
 
+  useEffect(() => {
+    // Handle the auth callback
+    const handleAuthCallback = async () => {
+      // Check if there's a hash in the URL (OAuth callback)
+      if (window.location.hash) {
+        const { data, error } = await supabase.auth.getSession();
+        if (data.session) {
+          setSession(data.session);
+          return;
+        }
+      }
+
+      // Regular session check
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        setSession(session);
+      });
+    };
+
+    handleAuthCallback();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    console.log(session);
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   const navLinks = [
     { href: "#how-it-works", label: "How It Works" },
     { href: "#user-personas", label: "Community" },
@@ -42,9 +73,10 @@ function IdentifYouLanding() {
 
       <div className="relative flex items-center justify-between space-x-4">
         <div className="flex items-center justify-center">
-          <img src="/logo.png" alt="IdentifYou Logo" className="w-44 h-10" />
+          <button onClick={() => navigate("/")}>
+            <img src="/logo.png" alt="IdentifYou Logo" className="w-44 h-10" />
+          </button>
         </div>
-        <button className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 cursor-pointer" onClick={() => navigate("/auth")}>Sign In</button>
       </div>
 
       {/* Desktop Navigation */}
@@ -124,9 +156,9 @@ function IdentifYouLanding() {
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold mb-6 text-white">
-            We Are Making Generations
+            We Are Making Stronger
             <br />
-            <span className="text-purple-400">Stronger and Better</span>
+            <span className="text-purple-400">and Better Generations</span>
           </h1>
 
           <p className="text-lg sm:text-xl lg:text-2xl text-gray-300 mb-4 max-w-3xl mx-auto leading-relaxed">
@@ -197,7 +229,10 @@ function IdentifYouLanding() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 relative z-10">
               {steps.map((step, index) => (
-                <div key={index} className="text-center group flex flex-col items-center">
+                <div
+                  key={index}
+                  className="text-center group flex flex-col items-center"
+                >
                   <div
                     className={`w-20 h-20 mx-auto mb-6 ${step.color} rounded-full flex items-center justify-center text-white shadow-xl group-hover:scale-110 transition-transform duration-300 flex-shrink-0`}
                   >
@@ -315,14 +350,19 @@ function IdentifYouLanding() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 font-sans">
+    <>
+      {/* FormSidebar Component with Landing Page flag */}
+      <FormSidebar isLandingPage={true} />
+      
+      <div className="min-h-screen bg-gray-900 font-sans">
       <Header />
       <main>
         <HeroSection />
         <UserPersonasSection />
         <HowItWorksSection />
       </main>
-    </div>
+      </div>
+    </>
   );
 }
 

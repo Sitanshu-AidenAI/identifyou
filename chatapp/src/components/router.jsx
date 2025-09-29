@@ -19,5 +19,12 @@ export const router = createBrowserRouter([
         <ProtectedRoute>
           <ChatPage />
         </ProtectedRoute>,
+    },
+    {
+        path: "/room/:roomId",
+        element: 
+        <ProtectedRoute>
+          <ChatPage />
+        </ProtectedRoute>,
     }
 ]);

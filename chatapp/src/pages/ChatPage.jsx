@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useParams, useSearchParams } from 'react-router-dom'
 import Header from '../components/Header.jsx'
 import NameForm from '../components/NameForm.jsx'
 import RoomForm from '../components/RoomForm.jsx'
@@ -12,14 +13,18 @@ function ChatPage() {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isSharedRoom, setIsSharedRoom] = useState(false)
+  
+  const { roomId } = useParams()
+  const [searchParams] = useSearchParams()
 
   useEffect(() => {
     const savedUser = localStorage.getItem("username")
     const savedRoom = localStorage.getItem("roomname")
     
-    // Check for room parameter in URL
-    const urlParams = new URLSearchParams(window.location.search)
-    const roomFromUrl = urlParams.get('room')
+    // Check for room parameter in URL (both query param and path param)
+    const roomFromQuery = searchParams.get('room')
+    const roomFromPath = roomId
+    const roomFromUrl = roomFromPath || roomFromQuery
 
     if (roomFromUrl) {
       setRoomname(roomFromUrl)
@@ -34,8 +39,10 @@ function ChatPage() {
         setCurrentStep('name')
       }
       
-      // Update URL to remove the room parameter for cleaner experience
-      window.history.replaceState({}, '', window.location.pathname)
+      // Update URL to remove the query room parameter for cleaner experience (keep path params)
+      if (roomFromQuery && !roomFromPath) {
+        window.history.replaceState({}, '', window.location.pathname)
+      }
     } else if (savedUser && savedRoom) {
       // Normal session restoration
       setUsername(savedUser)
@@ -44,7 +51,7 @@ function ChatPage() {
     }
     
     setIsLoading(false)
-  }, [])
+  }, [roomId, searchParams])
 
   const handleNameSubmit = (name) => {
     setUsername(name)

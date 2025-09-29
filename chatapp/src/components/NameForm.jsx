@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import FormSidebar from "./FormSidebar";
+import BackButton from "./ui/BackButton";
 
 function NameForm({ onSubmit, onError, isSharedRoom = false, roomname = '' }) {
   const [name, setName] = useState("");
@@ -26,7 +28,15 @@ function NameForm({ onSubmit, onError, isSharedRoom = false, roomname = '' }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-gradient-to-br from-gray-900 via-blue-900/80 to-gray-900 backdrop-blur-sm flex flex-col justify-center items-center animate-fadeIn p-3 sm:p-4">
+    <>
+      {/* FormSidebar Component */}
+      <div className="flex justify-between">
+        <BackButton />
+        <FormSidebar />
+      </div>
+      
+      
+      <div className="fixed inset-0 z-40 bg-gradient-to-br from-gray-900 via-blue-900/80 to-gray-900 backdrop-blur-sm flex flex-col justify-center items-center animate-fadeIn p-3 sm:p-4">
       {/* Floating particles effect */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-purple-400/30 rounded-full animate-float"></div>
@@ -142,7 +152,8 @@ function NameForm({ onSubmit, onError, isSharedRoom = false, roomname = '' }) {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 

@@ -5,7 +5,6 @@ function ChatRoom({ username, roomname, onError, onDisconnect }) {
   const [currentMessage, setCurrentMessage] = useState("");
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
   const [connectedUsers, setConnectedUsers] = useState([]);
   const [readyToChat, setReadyToChat] = useState(false);
   const [isProcessingBacklog, setIsProcessingBacklog] = useState(false);
@@ -236,7 +235,6 @@ function ChatRoom({ username, roomname, onError, onDisconnect }) {
 
       webSocketRef.current.send(JSON.stringify({ message: trimmedMessage }));
       setCurrentMessage("");
-      setIsTyping(false);
 
       if (chatlogRef.current) {
         chatlogRef.current.scrollTo({
@@ -256,7 +254,6 @@ function ChatRoom({ username, roomname, onError, onDisconnect }) {
 
   const handleInputChange = (e) => {
     setCurrentMessage(e.target.value);
-    setIsTyping(e.target.value.length > 0);
   };
 
   const shareRoom = async () => {
@@ -271,7 +268,7 @@ function ChatRoom({ username, roomname, onError, onDisconnect }) {
         return;
       }
 
-      const shareUrl = `${window.location.origin}${window.location.pathname}?room=${roomname}`;
+      const shareUrl = `${window.location.origin}/room/${roomname}`;
 
       // Try to use the modern Clipboard API
       if (navigator.clipboard && window.isSecureContext) {
@@ -347,22 +344,6 @@ function ChatRoom({ username, roomname, onError, onDisconnect }) {
                 </svg>
               </button>
               
-              {isTyping && (
-                <div className="flex items-center space-x-1 text-xs text-gray-400">
-                  <div className="flex space-x-1">
-                    <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce"></div>
-                    <div
-                      className="w-1 h-1 bg-gray-400 rounded-full animate-bounce"
-                      style={{ animationDelay: "0.1s" }}
-                    ></div>
-                    <div
-                      className="w-1 h-1 bg-gray-400 rounded-full animate-bounce"
-                      style={{ animationDelay: "0.2s" }}
-                    ></div>
-                  </div>
-                  <span>typing...</span>
-                </div>
-              )}
             </div>
           </div>
         </div>

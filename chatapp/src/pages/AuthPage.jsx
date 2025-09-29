@@ -22,7 +22,14 @@ export default function AuthPage() {
         if (data.session) {
           setSession(data.session);
           setLoading(false);
-          navigate("/chat", { replace: true });
+          // Check for intended destination and navigate there
+          const intendedDestination = sessionStorage.getItem('intendedDestination');
+          if (intendedDestination) {
+            sessionStorage.removeItem('intendedDestination');
+            navigate(intendedDestination, { replace: true });
+          } else {
+            navigate("/chat", { replace: true });
+          }
           return;
         }
       }
@@ -32,7 +39,14 @@ export default function AuthPage() {
         setSession(session);
         setLoading(false);
         if (session) {
-          navigate("/chat", { replace: true });
+          // Check for intended destination and navigate there
+          const intendedDestination = sessionStorage.getItem('intendedDestination');
+          if (intendedDestination) {
+            sessionStorage.removeItem('intendedDestination');
+            navigate(intendedDestination, { replace: true });
+          } else {
+            navigate("/chat", { replace: true });
+          }
         }
       });
     };
@@ -45,7 +59,14 @@ export default function AuthPage() {
       setSession(session);
       setLoading(false);
       if (session) {
-        navigate("/chat", { replace: true });
+        // Check for intended destination and navigate there
+        const intendedDestination = sessionStorage.getItem('intendedDestination');
+        if (intendedDestination) {
+          sessionStorage.removeItem('intendedDestination');
+          navigate(intendedDestination, { replace: true });
+        } else {
+          navigate("/chat", { replace: true });
+        }
       }
     });
 
@@ -69,9 +90,10 @@ export default function AuthPage() {
       if (error) {
         console.log("Error signing out:", error.message);
       } else {
-        // Clear any stored user data
+        // Clear any stored user data and intended destination
         localStorage.removeItem("username");
         localStorage.removeItem("roomname");
+        sessionStorage.removeItem('intendedDestination');
         // Navigate to home page
         navigate("/", { replace: true });
       }
@@ -105,6 +127,20 @@ export default function AuthPage() {
             className="absolute top-1/2 left-1/3 w-20 h-20 sm:w-24 sm:h-24 bg-purple-400/10 rounded-full blur-xl animate-pulse"
             style={{ animationDelay: "2s" }}
           ></div>
+        </div>
+
+        <div className="mb-6 sm:mb-8 md:mb-6 lg:mb-0 relative z-10 flex justify-center items-center pt-8">
+          <div className="bg-gray-800/60 backdrop-blur-lg py-3 sm:py-4 md:py-3 lg:py-4 px-6 sm:px-8 md:px-6 lg:px-8 rounded-xl shadow-2xl border border-gray-300/50">
+            <div className="flex justify-center items-center ">
+              <button onClick={() => navigate("/")}>
+                <img
+                src="/logo.png"
+                alt="Company Logo"
+                className="h-8 sm:h-10 md:h-8 lg:h-12"
+              />
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Header with back button
@@ -167,7 +203,9 @@ export default function AuthPage() {
                 <div className="w-full border-t border-gray-600/50"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 text-gray-400 bg-gray-900">Or continue with</span>
+                <span className="px-4 text-gray-400 bg-gray-900">
+                  Or continue with
+                </span>
               </div>
             </div>
 
@@ -190,7 +228,9 @@ export default function AuthPage() {
           <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
             <div className="w-8 h-8 bg-green-500 rounded-full"></div>
           </div>
-          <h2 className="text-2xl font-bold">Welcome, {session?.user?.email}</h2>
+          <h2 className="text-2xl font-bold">
+            Welcome, {session?.user?.email}
+          </h2>
           <p className="text-gray-300">You are now signed in!</p>
           <button
             className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300"

@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../supabaseClient";
+import FormSidebar from "./FormSidebar";
+import BackButton from "./ui/BackButton";
 
 function RoomForm({ onJoinRoom, onError, username }) {
   const [roomName, setRoomName] = useState("");
@@ -85,28 +87,15 @@ function RoomForm({ onJoinRoom, onError, username }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-gradient-to-br from-gray-900 via-blue-900/80 to-gray-900 backdrop-blur-sm flex flex-col justify-center items-center animate-fadeIn p-4">
-      {/* Sign Out Button - Top Right */}
-      <button
-        onClick={async () => {
-          try {
-            setTimeout(() => {
-              navigate("/", { replace: true });
-            }, 100);
-            await supabase.auth.signOut();
-            // Clear any stored user data
-            localStorage.removeItem("username");
-            localStorage.removeItem("roomname");
-          } catch (error) {
-            console.error("Error signing out:", error);
-            onError("Failed to sign out. Please try again.");
-          }
-        }}
-        className="absolute top-12 right-6 z-20 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-red-600/30 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-900 cursor-pointer"
-      >
-        Sign Out
-      </button>
-
+    <>
+      {/* FormSidebar Component */}
+      <div className="flex justify-between">
+        <BackButton />
+        <FormSidebar />
+      </div>
+      
+      <div className="fixed inset-0 z-40 bg-gradient-to-br from-gray-900 via-blue-900/80 to-gray-900 backdrop-blur-sm flex flex-col justify-center items-center animate-fadeIn p-4">
+      
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/4 left-1/6 w-32 h-32 bg-purple-600/10 rounded-full blur-xl animate-pulse"></div>
@@ -304,7 +293,8 @@ function RoomForm({ onJoinRoom, onError, username }) {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 
