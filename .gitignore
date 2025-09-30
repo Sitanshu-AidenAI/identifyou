@@ -1,2 +1,6 @@
 credentials.conf
 metadata.json
+node_modules/
+dist/
+.env.production
+.env
