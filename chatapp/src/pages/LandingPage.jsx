@@ -242,7 +242,7 @@ function IdentifYouLanding() {
                     <h3 className="font-bold text-sm text-white mb-3 uppercase tracking-wide">
                       {step.title}
                     </h3>
-                    <p className="text-gray-300 leading-relaxed flex-grow flex items-center justify-center text-center">
+                    <p className="text-gray-300 leading-relaxed flex-grow flex items-center justify-center text-center lg:text-sm xl:md">
                       {step.description}
                     </p>
                   </div>

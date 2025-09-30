@@ -215,7 +215,7 @@ export default function AuthPage() {
               className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-gray-900 font-medium py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl border border-gray-200 cursor-pointer"
             >
               <Chrome className="w-5 h-5" />
-              Continue with Google
+              Sign in with Google
             </button>
           </div>
         </main>

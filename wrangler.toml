@@ -11,12 +11,13 @@ class_name = "ChatRoom"
 name = "limiters"
 class_name = "RateLimiter"
 
-# Durable Object migrations (required)
+# Durable Object migrations
 [[migrations]]
-tag = "v1"   # if you’ve already tried v1, change this to v2
+tag = "v1"
 new_sqlite_classes = ["ChatRoom", "RateLimiter"]
 
-# Serve React build instead of old static HTML
+# Serve React build
 [assets]
 directory = "chatapp/dist"
 not_found_handling = "single-page-application"
+
